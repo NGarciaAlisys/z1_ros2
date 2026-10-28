@@ -41,6 +41,7 @@ from moveit_configs_utils.launches import generate_move_group_launch
 def launch_setup(context, *args, **kwargs):
 
     sim_ignition = LaunchConfiguration("sim_ignition").perform(context)
+    with_gripper = LaunchConfiguration("with_gripper").perform(context)
     rviz = LaunchConfiguration("rviz").perform(context)
     rviz_config = LaunchConfiguration("rviz_config").perform(context)
     starting_controller = LaunchConfiguration("starting_controller").perform(context)
@@ -52,6 +53,7 @@ def launch_setup(context, *args, **kwargs):
         PythonLaunchDescriptionSource(bringup_file),
         launch_arguments={
             "sim_ignition": sim_ignition,
+            "with_gripper": with_gripper,
             "rviz": "false",
             "starting_controller": starting_controller,
         }.items(),
@@ -61,6 +63,12 @@ def launch_setup(context, *args, **kwargs):
     moveit_config = MoveItConfigsBuilder("z1_description", package_name="z1_moveit")
     moveit_config = moveit_config.to_moveit_configs()
     moveit_config.trajectory_execution["use_sim_time"] = (sim_ignition == "true")
+    if not IfCondition(LaunchConfiguration("with_gripper")).evaluate(context):
+        controller_manager = moveit_config.trajectory_execution[
+            "moveit_simple_controller_manager"
+        ]
+        controller_manager["controller_names"].remove("gripper_controller")
+        controller_manager.pop("gripper_controller")
 
     rviz_launch_file = os.path.join(
         get_package_share_path("z1_moveit"), "launch", "moveit_rviz.launch.py"
@@ -103,7 +111,9 @@ def generate_launch_description():
 
     declared_arguments.append(
         DeclareLaunchArgument(
-            "with_gripper", default_value="true", description="Use the gripper?"
+            "with_gripper",
+            default_value="true",
+            description="Enable or disable gripper control",
         )
     )
 

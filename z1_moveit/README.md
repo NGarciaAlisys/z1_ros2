@@ -12,3 +12,8 @@ As for the _standard_ bringup file, the `sim_ignition` flag can be disabled to e
 ros2 launch z1_moveit z1_moveit.launch.py sim_ignition:=false
 ```
 Other launch arguments include the `rviz` activation flag and its `rviz_config`, the `starting_controller` that can be used by MoveIt! (make sure that it is a valid one!) taken from a `controller_config`.
+
+The `with_gripper` argument (default: `true`) enables or disables gripper control without removing the gripper from the simulated robot. For example:
+```
+ros2 launch z1_moveit z1_moveit.launch.py with_gripper:=false
+```
