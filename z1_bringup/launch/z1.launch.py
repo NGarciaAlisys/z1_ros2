@@ -104,7 +104,14 @@ def launch_setup(context, *args, **kwargs):
             "set_state": "active",
         }],
     )
-    
+
+    starting_controller_after_joint_states = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[starting_controller_spawner],
+        )
+    )
+
     gripper_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -114,6 +121,13 @@ def launch_setup(context, *args, **kwargs):
             "set_state": "active",
         }],
         condition=IfCondition(with_gripper),
+    )
+
+    gripper_controller_after_arm = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=starting_controller_spawner,
+            on_exit=[gripper_controller_spawner],
+        )
     )
 
     rviz_node = Node(
@@ -133,10 +147,10 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_start += [
         robot_state_publisher_node,
-        joint_state_broadcaster_spawner,
-        starting_controller_spawner,
-        gripper_controller_spawner,
+        starting_controller_after_joint_states,
+        gripper_controller_after_arm,
         rviz_delayed,
+        joint_state_broadcaster_spawner,
     ]
 
     #  ____            _   ____       _           _
@@ -194,6 +208,14 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(sim_ignition),
     )
 
+    clock_bridge_node = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=["/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock"],
+        output="screen",
+        condition=IfCondition(sim_ignition),
+    )
+
     ignition_spawn_z1_node = Node(
         package="ros_gz_sim",
         executable="create",
@@ -209,6 +231,7 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_start += [
         ignition_simulator_node,
+        clock_bridge_node,
         ignition_spawn_z1_node,
     ]
     return nodes_to_start

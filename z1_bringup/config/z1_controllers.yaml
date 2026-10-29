@@ -78,4 +78,7 @@ gripper_controller:
     interpolate_from_desired_state: true
     constraints:
       stopped_velocity_tolerance: 0.05
-      goal_time: 0.0
+      goal_time: 1.0
+      jointGripper:
+        trajectory: 0.2
+        goal: 0.05

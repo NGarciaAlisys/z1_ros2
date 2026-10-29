@@ -23,11 +23,12 @@ from launch.actions import (
     OpaqueFunction,
     RegisterEventHandler,
     ExecuteProcess,
+    GroupAction,
 )
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
+from launch_ros.actions import Node, SetParameter
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import (
     get_package_prefix,
@@ -78,10 +79,17 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(rviz),
     )
 
+    moveit_launch = GroupAction(
+        actions=[
+            SetParameter(name="use_sim_time", value=(sim_ignition == "true")),
+            generate_move_group_launch(moveit_config),
+            rviz_launch,
+        ]
+    )
+
     return [
         bringup_launch,
-        generate_move_group_launch(moveit_config),
-        rviz_launch,
+        moveit_launch,
     ]
 
 

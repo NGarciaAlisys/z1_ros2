@@ -288,7 +288,7 @@
         <parent link="gripperStator" />
         <child link="gripperMover" />
         <axis xyz="0 1 0" />
-        <dynamics damping="${jointDamping}" friction="${jointFriction}" />
+        <dynamics damping="0.1" friction="0.0" />
         <limit effort="${torqueMax}" velocity="${velocityMax}" lower="${Gripper_PositionMin}"
             upper="${Gripper_PositionMax}" />
     </joint>
@@ -319,11 +319,11 @@
     </link>
 
     <gazebo reference="gripperStator">
-        <self_collide>true</self_collide>
+        <self_collide>false</self_collide>
     </gazebo>
 
     <gazebo reference="gripperMover">
-        <self_collide>true</self_collide>
+        <self_collide>false</self_collide>
     </gazebo>
 
 
