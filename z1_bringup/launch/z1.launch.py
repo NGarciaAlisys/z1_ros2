@@ -48,6 +48,7 @@ def launch_setup(context, *args, **kwargs):
     controller_config = LaunchConfiguration("controller_config")
     starting_controller = LaunchConfiguration("starting_controller")
     sim_ignition = LaunchConfiguration("sim_ignition")
+    root_link = LaunchConfiguration("root_link")
 
     use_sim_time = (sim_ignition.perform(context) == "true")
 
@@ -72,6 +73,7 @@ def launch_setup(context, *args, **kwargs):
             "with_gripper": with_gripper.perform(context),
             "controllers": controller_config.perform(context),
             "sim_ignition": sim_ignition.perform(context),
+            "root_link": root_link.perform(context),
         }
     )
     robot_description = {"robot_description": robot_description_content}
@@ -280,6 +282,13 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_name", default_value="z1", description="Name of the robot"
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "root_link", default_value="world",
+            description="Root link of the arm (a mount frame when it sits on a mobile base)"
         )
     )
 

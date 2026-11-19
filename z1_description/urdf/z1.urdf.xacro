@@ -7,6 +7,9 @@
     <xacro:arg name="controllers" default="$(find z1_bringup)/config/z1_controllers.yaml" />
     <xacro:arg name="sim_ignition" default="true" />
     <xacro:arg name="with_gripper" default="true" />
+    <!-- Root link of the arm: "world" standalone, or a mount frame (e.g. z1_mount) when the arm sits on
+         a mobile base whose TF tree publishes <base> -> root_link -->
+    <xacro:arg name="root_link" default="world" />
 
     <xacro:include filename="$(find z1_description)/urdf/const.xacro" />
     <xacro:include filename="$(find z1_description)/urdf/z1.ros2_control.xacro" />
@@ -14,11 +17,11 @@
         <color rgba="0.3 0.3 0.3 1.0" />
     </material>
 
-    <link name="world" />
+    <link name="$(arg root_link)" />
 
     <joint name="base_static_joint" type="fixed">
         <origin rpy="0 0 0" xyz="0 0 0" />
-        <parent link="world" />
+        <parent link="$(arg root_link)" />
         <child link="link00" />
     </joint>
 
@@ -328,7 +331,7 @@
 
 
     <xacro:if value="$(arg sim_ignition)">
-        <gazebo reference="world" />
+        <gazebo reference="$(arg root_link)" />
         <gazebo>
             <plugin filename="libign_ros2_control-system.so"
                 name="ign_ros2_control::IgnitionROS2ControlPlugin">

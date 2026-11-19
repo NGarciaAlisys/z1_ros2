@@ -46,6 +46,7 @@ def launch_setup(context, *args, **kwargs):
     rviz = LaunchConfiguration("rviz").perform(context)
     rviz_config = LaunchConfiguration("rviz_config").perform(context)
     starting_controller = LaunchConfiguration("starting_controller").perform(context)
+    root_link = LaunchConfiguration("root_link").perform(context)
 
     bringup_file = os.path.join(
         get_package_share_path("z1_bringup"), "launch", "z1.launch.py"
@@ -57,11 +58,14 @@ def launch_setup(context, *args, **kwargs):
             "with_gripper": with_gripper,
             "rviz": "false",
             "starting_controller": starting_controller,
+            "root_link": root_link,
         }.items(),
     )
 
     # move_group.launch.file but with correct setting of "use_sim_time"
     moveit_config = MoveItConfigsBuilder("z1_description", package_name="z1_moveit")
+    moveit_config = moveit_config.robot_description(mappings={
+        "sim_ignition": sim_ignition, "with_gripper": with_gripper, "root_link": root_link})
     moveit_config = moveit_config.to_moveit_configs()
     moveit_config.trajectory_execution["use_sim_time"] = (sim_ignition == "true")
     if not IfCondition(LaunchConfiguration("with_gripper")).evaluate(context):
@@ -138,6 +142,14 @@ def generate_launch_description():
             "sim_ignition",
             default_value="true",
             description="Launch simulation in Ignition Gazebo?"
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "root_link",
+            default_value="world",
+            description="Root link of the arm (a mount frame when it sits on a mobile base)"
         )
     )
 
